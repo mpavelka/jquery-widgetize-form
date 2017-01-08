@@ -29,17 +29,40 @@ $.fn.widgetizeForm.getJsonData = function(selection) {
 
 
 
+$.fn.widgetizeForm.clearMesssages = function(selection) {
+	var settings = selection.data("widgetizeForm.settings");
+
+	// Clear message
+	selection
+		.find(settings.messages.wrapper)
+		.html("");
+
+	// TODO: Clear field errors
+	selection
+		.find("[name]");
+}
+
+
+
 $.fn.widgetizeForm.onSubmit = function(e, selection) {
-	e.preventDefault();
-	var method = $(selection).attr("method"),
+	var method = selection.attr("method"),
 		data   = $.fn.widgetizeForm.getJsonData(selection),
-		url    = $(selection).attr("action");
+		url    = selection.attr("action");
+
+	e.preventDefault();
+	$.fn.widgetizeForm.clearMesssages(selection);
+
+	if (method === undefined)
+		method = "GET";
+
+	if (method != "GET")
+		data = JSON.stringify(data);
 
 	$.ajax({
 		type: method,
 		url: url,
 		contentType: "application/json",
-		data: JSON.stringify(data)
+		data: data
 	}).done(function(data, textStatus, jqXHR) {
 		$.fn.widgetizeForm.onAJAXDone(selection, data, textStatus, jqXHR);
 	}).fail(function(jqXHR, textStatus, errorThrown) {
@@ -53,9 +76,10 @@ $.fn.widgetizeForm.onAJAXDone = function(selection, data, textStatus, jqXHR) {
 	var settings = selection.data("widgetizeForm.settings");
 
 	// Message
+	var message = settings.messages.fromResponse != false ? data[settings.messages.fromResponse] : settings.messages.success;
 	selection
 		.find(settings.messages.wrapper)
-		.append('<div class="'+settings.messages.class+'" role="alert">'+settings.messages.success+'</div>');
+		.append('<div class="'+settings.messages.classSuccess+'" role="alert">'+message+'</div>');
 
 	// empty fields
 	if (settings.messages.resetOnSuccess) {
@@ -78,10 +102,12 @@ $.fn.widgetizeForm.onAJAXFail = function(selection, jqXHR, textStatus, errorThro
 
 $.fn.widgetizeForm.defaults = {
 	inputWrapper: '.form-group',
+	errorWrapper: '.input-error',
 	messages: {
-		fromResponse: false,
+		fromResponse: "message",
 		wrapper: '.messages',
-		class: 'alert alert-danger',
+		classSuccess: 'alert alert-success',
+		classError: 'alert alert-danger',
 		success: "Success!",
 		error: "Invalid data given.",
 		serverError: "Server encountered an error.",
