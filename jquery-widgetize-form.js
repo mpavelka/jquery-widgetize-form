@@ -34,12 +34,13 @@ $.fn.widgetizeForm.clearMesssages = function(selection) {
 
 	// Clear message
 	selection
-		.find(settings.messages.wrapper)
+		.find(settings.messageWrapper)
 		.html("");
 
-	// TODO: Clear field errors
+	// Clear field errors
 	selection
-		.find("[name]");
+		.find(settings.errorWrapper)
+		.html("");
 }
 
 
@@ -73,29 +74,67 @@ $.fn.widgetizeForm.onSubmit = function(e, selection) {
 
 
 $.fn.widgetizeForm.onAJAXDone = function(selection, data, textStatus, jqXHR) {
-	var settings = selection.data("widgetizeForm.settings");
+	var message,
+		settings = selection.data("widgetizeForm.settings");
 
 	// Message
-	var message = settings.messages.fromResponse != false ? data[settings.messages.fromResponse] : settings.messages.success;
+	message = settings.messages.fromResponse ? data[settings.response.keyMessage] : settings.messages.success;
 	selection
-		.find(settings.messages.wrapper)
+		.find(settings.messageWrapper)
 		.append('<div class="'+settings.messages.classSuccess+'" role="alert">'+message+'</div>');
 
 	// empty fields
-	if (settings.messages.resetOnSuccess) {
-		selection.find('input').not('[type="hidden"]').val('');
-		selection.find('textarea').val('').html('');
+	if (settings.resetOnSuccess) {
+		selection.find('[name]').not('[type="hidden"]').val('').html('');
 	}
 
 	// onSuccess
 	if (settings.onSuccess != null)
-		settings.onSuccess(data);
+		settings.onSuccess(data, textStatus, jqXHR);
 }
+// rinkitamoaritakaru
 
 
 
 $.fn.widgetizeForm.onAJAXFail = function(selection, jqXHR, textStatus, errorThrown) {
-	// TODO: this
+	var message,
+		errors,
+		keys,
+		settings = selection.data("widgetizeForm.settings");
+
+	// Message
+	if (jqXHR.status == 0)
+		message = settings.messages.connectionRefused;
+	else if (jqXHR.responseJSON === undefined) 
+		message = jqXHR.status >= 500 ? settings.messages.serverError : settings.messages.error;
+	else if (jqXHR.status >= 500)
+		message = settings.messages.fromResponse ? jqXHR.responseJSON[settings.response.keyMessage] : settings.messages.serverError;
+	else if (jqXHR.status >= 400)
+		message = settings.messages.fromResponse ? jqXHR.responseJSON[settings.response.keyMessage] : settings.messages.error;
+
+	selection
+		.find(settings.messageWrapper)
+		.append('<div class="'+settings.messages.classError+'" role="alert">'+message+'</div>');
+
+
+	// Field errors
+	if (jqXHR.responseJSON !== undefined) {
+		errors = jqXHR.responseJSON[settings.response.keyErrors];
+		if (errors !== undefined) {
+			keys = Object.keys(errors);
+			for (var i=0; i < keys.length; i++) {
+				selection.find('[name="'+keys[i]+'"]')
+					.closest(settings.inputWrapper)
+					.addClass(settings.hasErrorClass)
+					.find(settings.errorWrapper)
+					.append('<div class="'+settings.errorClass+'">'+errors[keys[i]]+'</div>');
+			}
+		}
+	}
+
+	// onError
+	if (settings.onError != null)
+		settings.onError(jqXHR, textStatus, errorThrown);
 }
 
 
@@ -103,16 +142,23 @@ $.fn.widgetizeForm.onAJAXFail = function(selection, jqXHR, textStatus, errorThro
 $.fn.widgetizeForm.defaults = {
 	inputWrapper: '.form-group',
 	errorWrapper: '.input-error',
+	messageWrapper: '.messages',
+	hasErrorClass: 'has-error',
+	errorClass: 'help-inline help-alert',
+	response: {
+		keyMessage : "message",
+		keyErrors: "errors"
+	},
 	messages: {
-		fromResponse: "message",
-		wrapper: '.messages',
+		fromResponse: false,
 		classSuccess: 'alert alert-success',
 		classError: 'alert alert-danger',
 		success: "Success!",
-		error: "Invalid data given.",
+		error: "There is an error in sent data.",
 		serverError: "Server encountered an error.",
+		connectionRefused: "Connection refused."
 	},
-	resetOnSuccess: false,
+	resetOnSuccess: true,
 	onSuccess: null,
 	onError: null
 };
