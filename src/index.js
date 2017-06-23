@@ -15,12 +15,13 @@ $.fn.widgetizeForm = function(options) {
 	selection.on('submit', function(e) {
 		$.fn.widgetizeForm.onSubmit(e, selection);
 	});
+	return this;
 }
 
 
 
 $.fn.widgetizeForm.getJsonData = function(selection) {
-	var serializedData 	= selection.serializeArray();
+	var serializedData 	= selection.first().serializeArray();
 	var ret = {}
 	for (var i=0; i < serializedData.length; i++)
 		ret[serializedData[i]["name"]] = serializedData[i]["value"];
@@ -46,8 +47,9 @@ $.fn.widgetizeForm.clearMesssages = function(selection) {
 
 
 $.fn.widgetizeForm.onSubmit = function(e, selection) {
+	var settings = selection.data("widgetizeForm.settings");
 	var method = selection.attr("method"),
-		data   = $.fn.widgetizeForm.getJsonData(selection),
+		data   = settings.getData ? settings.getData() : $.fn.widgetizeForm.getJsonData(selection),
 		url    = selection.attr("action");
 
 	e.preventDefault();
@@ -160,7 +162,8 @@ $.fn.widgetizeForm.defaults = {
 	},
 	resetOnSuccess: true,
 	onSuccess: null,
-	onError: null
+	onError: null,
+	getData: null,
 };
 
 
