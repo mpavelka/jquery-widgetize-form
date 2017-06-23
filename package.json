@@ -1,0 +1,35 @@
+{
+  "name": "jquery-widgetize-form",
+  "version": "1.0.0",
+  "description": "This plugin converts a regular HTML form into an interactive widget that submits data over AJAX and displays messages.",
+  "main": "src/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mpavelka/jquery-widgetize-form.git"
+  },
+  "keywords": [
+    "form",
+    "jquery",
+    "widget",
+    "ajax"
+  ],
+  "author": "Miloslav Pavelka",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mpavelka/jquery-widgetize-form/issues"
+  },
+  "homepage": "https://github.com/mpavelka/jquery-widgetize-form#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-browserify": "^0.5.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^3.0.0",
+    "gulp-watch": "^4.3.11"
+  }
+}
