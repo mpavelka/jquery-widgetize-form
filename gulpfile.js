@@ -3,7 +3,9 @@ var gulp   = require('gulp'),
 	uglify = require("gulp-uglify"),
 	rename = require("gulp-rename"),
 	watch = require("gulp-watch"),
-	browserify = require('gulp-browserify');
+	browserify = require('gulp-browserify'),
+	fs = require('fs'),
+	header = require('gulp-header');
 
 var index = './src/index.js';
 var basename = 'jquery-widgetize-form'
@@ -20,6 +22,7 @@ gulp.task('release-debug', function () {
 		.pipe(rename({
 			'basename': basename,
 		}))
+		.pipe(header("/*\n"+fs.readFileSync('LICENSE', 'utf8')+"*/\n"))
 		.pipe(gulp.dest(dist));
 });
 
@@ -36,6 +39,7 @@ gulp.task('release', function () {
 			'basename': basename,
 			'suffix' : '.min',
 		}))
+		.pipe(header("/*\n"+fs.readFileSync('LICENSE', 'utf8')+"*/\n"))
 		.pipe(gulp.dest(dist));
 });
 
